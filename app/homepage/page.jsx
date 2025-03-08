@@ -14,7 +14,7 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   
-  // Fetch all products from API
+ 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
