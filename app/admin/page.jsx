@@ -60,7 +60,7 @@ export default function AdminDashboard() {
       {/* Sidebar */}
       <div className="hidden md:flex flex-col w-64 bg-white border-r">
         <div className="p-4 border-b">
-          <h2 className="text-xl font-bold">ShopAdmin</h2>
+          <h2 className="text-xl font-bold">StyleHub</h2>
         </div>
         <div className="flex flex-col flex-1 p-4 space-y-2">
           <Button variant="ghost" className="justify-start">
