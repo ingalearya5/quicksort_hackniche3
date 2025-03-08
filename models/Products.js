@@ -6,8 +6,9 @@ const productSchema = new mongoose.Schema({
   image: { type: String, required: true }, // Can store image URL or Base64
   rating: { type: Number, default: null }, // Rating is nullable, assuming it’s a number
   link: { type: String, required: true }, // Product URL
-  review: { type: String, enum: ["Positive", "Neutral", "Negative"], required: true }, // Limited to specific values
-  category: { type: String, required: true }
+  reviews: { type: String, required: false }, // Limited to specific values
+  category: { type: String, required: true },
+  gender: { type: String, required: false },
 }, { timestamps: true }); // Adds createdAt & updatedAt fields
 
 const Product =  mongoose.models.Product || mongoose.model("Product", productSchema);
