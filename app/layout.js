@@ -8,7 +8,10 @@ import {
   SignedOut,
   UserButton,
 } from '@clerk/nextjs'
+import { Toaster } from "sonner";
+
 import Chatbot from "./components/Chatbot";
+import { CartProvider } from "./context/CartContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +35,10 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <CartProvider >
         {children}
+        <Toaster richColors position="top-right" />
+        </CartProvider>
         <Chatbot />
       </body>
     </html>

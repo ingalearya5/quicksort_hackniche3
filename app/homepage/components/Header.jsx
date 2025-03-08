@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, ShoppingCart, ChevronDown } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Search, ChevronDown } from 'lucide-react';
+import { UserButton } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { UserButton } from '@clerk/nextjs';
+import CartDropdown from './CartDropdown';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -73,15 +73,10 @@ const Header = ({ onSearch, onCategorySelect }) => {
             </DropdownMenu>
           </div>
 
-          {/* Right side - User profile, cart */}
+          {/* Right side - Cart and profile */}
           <div className="flex items-center">
             {/* Shopping cart */}
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingCart className="h-6 w-6" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                0
-              </Badge>
-            </Button>
+            <CartDropdown />
 
             {/* User button */}
             <div className="ml-4">
