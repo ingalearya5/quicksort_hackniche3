@@ -1,74 +1,56 @@
-'use client';
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
 } from '@/components/ui/card';
-import { ShoppingCart, Heart, Eye, CheckCircle } from 'lucide-react';
-import { useCart } from '@/app/context/CartContext';
-import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { ShoppingCart, Heart, ExternalLink, Star } from 'lucide-react';
+import { toast } from 'sonner'; // Import toast
+import { useCart } from '@/app/context/CartContext'; // Import useCart hook
 
 const ProductCard = ({ product }) => {
-  const { addToCart } = useCart();
-  const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const isMen = product.category.toLowerCase().includes('men');
-  const isWomen = product.category.toLowerCase().includes('women');
-  const isNew = product.isNew || Math.random() > 0.7; // Simulating "new" tag for some products
-  const hasDiscount = product.discountPercentage || Math.random() > 0.8; // Simulating discounts
-  const discountPercentage = product.discountPercentage || Math.floor(Math.random() * 30) + 10;
-  const originalPrice = hasDiscount ? (product.price * 100 / (100 - discountPercentage)).toFixed(2) : null;
+  const [isFavorite, setIsFavorite] = useState(false); // Missing state declaration
+  const { addToCart } = useCart(); // Use the cart context
+  
+  // Determine gender category
+  const isMen = product.gender?.toLowerCase() === 'male' || 
+                product.category?.toLowerCase().includes('men');
+  const isWomen = product.gender?.toLowerCase() === 'female' || 
+                  product.category?.toLowerCase().includes('women');
 
   // Determine category badge color
   const getCategoryBadge = () => {
     if (isMen) {
-      return (
-        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-0">
-          Men
-        </Badge>
-      );
+      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Men</Badge>;
     } else if (isWomen) {
-      return (
-        <Badge className="bg-pink-100 text-pink-800 hover:bg-pink-200 border-0">
-          Women
-        </Badge>
-      );
+      return <Badge className="bg-pink-100 text-pink-800 hover:bg-pink-200">Women</Badge>;
     } else {
-      return <Badge variant="outline">{product.category}</Badge>;
+      return <Badge variant="outline">{product.category || "General"}</Badge>;
     }
   };
 
-  const handleAddToCart = () => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      category: product.category,
-      quantity: 1
-    });
-
-    toast.success(`Added to cart`, {
-      description: product.name,
-      duration: 2000,
-      position: 'top-right',
-      icon: <CheckCircle className="h-4 w-4 text-green-500" />
-    });
   // Convert price string to number if needed
   const priceValue = typeof product.price === 'string' 
     ? parseFloat(product.price) || 0 
     : product.price || 0;
 
   // Default rating value
-  const ratingValue = product.rating === null ? 4.5 : product.rating;
+  const ratingValue = product.rating === null ? 4.5 : (product.rating || 4.5);
   
   // Check if product is in stock (assuming true if not specified)
   const inStock = product.inStock !== undefined ? product.inStock : true;
@@ -104,102 +86,176 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  // Handle add to cart action
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    addToCart({
+      id: product._id?.toString() || product.id,
+      name: product.title || product.name,
+      price: priceValue,
+      image: product.image,
+      quantity: 1
+    });
+    
+    toast.success(`Added to cart`, {
+      description: product.title || product.name,
+      duration: 2000,
+      position: 'top-right'
+    });
+  };
+
   return (
-    <Card 
-      className="overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-lg border-gray-200"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="relative h-64 overflow-hidden bg-gray-100">
-        <img
-          src={product.image}
-          alt={product.name}
-          className={`w-full h-full object-cover transition-transform duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}
-        />
-        
-        {/* Quick action buttons that appear on hover */}
-        <div className={`absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center gap-2 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-          <Button 
-            size="icon" 
-            variant="secondary" 
-            className="rounded-full bg-white bg-opacity-90 hover:bg-opacity-100 h-9 w-9"
-            onClick={toggleFavorite}
+    <>
+      {/* Product Card */}
+      <Card 
+        className="overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-lg cursor-pointer"
+        onClick={handleCardClick}
+      >
+        <div className="relative h-48 overflow-hidden bg-gray-100 group">
+          <img
+            src={product.image}
+            alt={product.title || product.name}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          />
+          <button 
+            className="absolute top-2 right-2 bg-white p-1.5 rounded-full shadow-md opacity-70 hover:opacity-100 transition-opacity"
+            onClick={toggleFavorite} // Fixed: was using handleInnerElementClick
           >
-            <Heart className={`h-4 w-4 ${isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-700'}`} />
-          </Button>
+            <Heart className="h-4 w-4 text-gray-600" />
+          </button>
+        </div>
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-start">
+            <CardTitle className="text-lg line-clamp-1">{product.title || product.name}</CardTitle>
+            <div className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center">
+              <span className="text-yellow-600 mr-0.5">★</span>
+              {ratingValue.toFixed(1)}
+            </div>
+          </div>
+          <CardDescription className="line-clamp-2 h-10">
+            {product.description || `Beautiful ${product.title || product.name} for everyday wear`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pb-2 flex-grow">
+          <div className="flex gap-2">
+            {getCategoryBadge()}
+            {inStock ? (
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">In Stock</Badge>
+            ) : (
+              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Out of Stock</Badge>
+            )}
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between items-center pt-2">
+          <div className="text-lg font-bold">${typeof priceValue === 'number' ? priceValue.toFixed(2) : priceValue}</div>
           <Button 
-            size="icon" 
-            variant="secondary" 
-            className="rounded-full bg-white bg-opacity-90 hover:bg-opacity-100 h-9 w-9"
+            className="flex items-center gap-1.5 transition-transform hover:scale-105"
+            onClick={handleAddToCart} // Fixed: was using handleInnerElementClick
           >
-            <Eye className="h-4 w-4 text-gray-700" />
+            <ShoppingCart className="h-4 w-4" />
+            Add to Cart
           </Button>
-        </div>
-        
-        {/* Badges */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {isNew && (
-            <div className="bg-green-500 text-white px-2 py-0.5 text-xs font-semibold rounded">
-              NEW
+        </CardFooter>
+      </Card>
+
+      {/* Detailed Product Dialog */}
+      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{product.title || product.name}</DialogTitle>
+            <DialogDescription>
+              Product ID: {product._id?.toString().substring(0, 10) || "N/A"}{product._id ? "..." : ""}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="md:flex gap-6 mt-4">
+            {/* Product Image */}
+            <div className="md:w-1/2 mb-4 md:mb-0">
+              <div className="aspect-square bg-gray-100 rounded-md overflow-hidden">
+                <img
+                  src={product.image}
+                  alt={product.title || product.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
-          )}
-          {hasDiscount && (
-            <div className="bg-red-500 text-white px-2 py-0.5 text-xs font-semibold rounded">
-              -{discountPercentage}%
+            
+            {/* Product Details */}
+            <div className="md:w-1/2 flex flex-col">
+              <div className="flex justify-between items-start mb-4">
+                <div className="text-3xl font-bold text-green-700">
+                  ${typeof priceValue === 'number' ? priceValue.toFixed(2) : priceValue}
+                </div>
+                {ratingValue && (
+                  <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full flex items-center">
+                    <Star className="h-4 w-4 text-yellow-600 fill-yellow-500 mr-1" />
+                    {ratingValue.toFixed(1)}
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex flex-wrap gap-2 mb-4">
+                {getCategoryBadge()}
+                <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                  {product.gender || "Unisex"}
+                </Badge>
+                {inStock ? (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">In Stock</Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Out of Stock</Badge>
+                )}
+              </div>
+              
+              <div className="space-y-4 flex-grow">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Description</h3>
+                  <p className="text-gray-700">
+                    {product.description || `Beautiful ${product.title || product.name} for everyday wear.`}
+                  </p>
+                </div>
+                
+                {product.reviews && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Reviews</h3>
+                    <p className="text-gray-700">{product.reviews || "No reviews yet"}</p>
+                  </div>
+                )}
+                
+                {product.link && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Product Link</h3>
+                    <button 
+                      className="text-blue-600 hover:underline flex items-center"
+                      onClick={handleExternalLinkClick}
+                    >
+                      Visit product page <ExternalLink className="ml-1 h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
-      
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-lg font-medium line-clamp-1">{product.name}</CardTitle>
-          <div className="bg-yellow-50 text-yellow-800 text-xs px-2 py-0.5 rounded-full flex items-center border border-yellow-100">
-            <span className="text-yellow-500 mr-0.5">★</span>
-            {(product.rating || (3.5 + Math.random())).toFixed(1)}
           </div>
-        </div>
-        <CardDescription className="line-clamp-2 h-10 text-gray-600">
-          {product.description || "Premium quality product with elegant design and durable materials."}
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="pb-2 flex-grow">
-        <div className="flex flex-wrap gap-2">
-          {getCategoryBadge()}
-          {product.inStock !== false ? (
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-              In Stock
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-              Out of Stock
-            </Badge>
-          )}
-        </div>
-      </CardContent>
-      
-      <CardFooter className="flex justify-between items-center pt-2">
-        <div className="font-medium">
-          <div className="text-lg font-bold text-gray-900">
-            ${parseFloat(product.price).toFixed(2)}
-          </div>
-          {hasDiscount && (
-            <div className="text-sm text-gray-500 line-through">
-              ${originalPrice}
-            </div>
-          )}
-        </div>
-        <Button
-          className="flex items-center gap-1.5 transition-all bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-sm hover:shadow"
-          onClick={handleAddToCart}
-          disabled={product.inStock === false}
-        >
-          <ShoppingCart className="h-4 w-4" />
-          Add to Cart
-        </Button>
-      </CardFooter>
-    </Card>
+          
+          <DialogFooter className="flex gap-2 mt-6">
+            <Button 
+              className="flex-1 py-5 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700"
+              onClick={handleAddToCart}
+            >
+              <ShoppingCart className="h-5 w-5" />
+              Add to Cart
+            </Button>
+            <Button 
+              className="flex items-center justify-center gap-2"
+              variant="outline"
+              onClick={toggleFavorite}
+            >
+              <Heart className="h-5 w-5" />
+              Add to Wishlist
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

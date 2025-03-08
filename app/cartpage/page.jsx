@@ -85,7 +85,7 @@ const CartPage = () => {
               onClick={handleCheckout}
             >
               <CreditCard className="h-5 w-5" />
-              Proceed to Checkout
+              purchase
             </Button>
             <Button
               variant="outline"
