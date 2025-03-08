@@ -1,18 +1,80 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useCart } from '@/app/context/CartContext';
 import { ShoppingBag, X, ShoppingCart, Trash2, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 const CartPage = () => {
-  const { cart, clearCart, removeFromCart, updateQuantity } = useCart();
+  const { cart, clearCart, removeFromCart, updateQuantity, userId } = useCart();
   const router = useRouter();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleCheckout = () => {
-    router.push('/checkout');
+  // This function collects basic browser/session data for analytics
+  const getSessionData = () => {
+    if (typeof window === 'undefined') return {};
+    
+    return {
+      deviceType: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+      browser: navigator.userAgent,
+      referrer: document.referrer || 'direct',
+      timestamp: new Date().toISOString()
+    };
+  };
+
+  const handleCheckout = async () => {
+    if (!userId) {
+      setError('Something went wrong. Please try again.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setError('');
+    
+    try {
+      // Process checkout and record purchase data
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          cart,
+          sessionData: getSessionData()
+        }),
+      });
+
+      // Make sure we get valid JSON
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        throw new Error('Invalid server response. Please try again.');
+      }
+      
+      if (response.ok) {
+        // Clear the cart after successful checkout
+        clearCart();
+        
+        // Redirect to order confirmation page with the order ID
+        toast.success("Order Successfull")
+        router.push(`/`);
+      } else {
+        console.error('Checkout failed:', data.message);
+        setError(data.message || 'Checkout failed. Please try again.');
+        setIsProcessing(false);
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      setError(error.message || 'An error occurred during checkout. Please try again.');
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -79,18 +141,32 @@ const CartPage = () => {
             <p>${cart.totalAmount.toFixed(2)}</p>
           </div>
 
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 my-4">
+              {error}
+            </div>
+          )}
+
           <div className="flex gap-6 mt-8">
             <Button
               className="flex-1 bg-indigo-600 text-white py-4 text-lg font-semibold hover:bg-indigo-700 transition-colors duration-300 flex items-center justify-center gap-2"
               onClick={handleCheckout}
+              disabled={isProcessing || cart.items.length === 0}
             >
-              <CreditCard className="h-5 w-5" />
-              purchase
+              {isProcessing ? (
+                <>Processing...</>
+              ) : (
+                <>
+                  <CreditCard className="h-5 w-5" />
+                  Purchase
+                </>
+              )}
             </Button>
             <Button
               variant="outline"
               className="flex-1 text-red-600 border-red-600 py-4 text-lg font-semibold hover:bg-red-50 transition-colors duration-300 flex items-center justify-center gap-2"
               onClick={clearCart}
+              disabled={isProcessing}
             >
               <Trash2 className="h-5 w-5" />
               Clear Cart
