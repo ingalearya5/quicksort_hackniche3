@@ -1,167 +1,234 @@
-// import Link from "next/link";
-// import { ShoppingBag } from "lucide-react";
-// import { SignInButton, UserButton } from "@clerk/nextjs";
-// import { Button } from "@/components/ui/button";
-
-// export default function Navbar() {
-//   return (
-//     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
-//       <div className="container flex h-16 items-center justify-between">
-//         <div className="flex items-center gap-6 md:gap-10">
-//           <Link href="/" className="flex items-center space-x-2 transition-colors hover:opacity-80">
-//             <ShoppingBag className="h-6 w-6 text-primary" />
-//             <span className="font-bold text-lg tracking-wide inline-block">STYLEHUB</span>
-//           </Link>
-//           <nav className="hidden md:flex gap-6">
-//             <Link
-//               href="#"
-//               className="text-sm font-medium transition-colors hover:text-primary relative group"
-//             >
-//               New Arrivals
-//               <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
-//             </Link>
-//             <Link
-//               href="#"
-//               className="text-sm font-medium transition-colors hover:text-primary relative group"
-//             >
-//               Women
-//               <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
-//             </Link>
-//             <Link
-//               href="#"
-//               className="text-sm font-medium transition-colors hover:text-primary relative group"
-//             >
-//               Men
-//               <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
-//             </Link>
-//             <Link
-//               href="#"
-//               className="text-sm font-medium transition-colors hover:text-primary relative group"
-//             >
-//               Accessories
-//               <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
-//             </Link>
-//           </nav>
-//         </div>
-//         <div className="flex items-center gap-4">
-//           <Button asChild variant="secondary" className="text-primary font-medium shadow-sm hover:shadow-md transition-all">
-//             <SignInButton>Get Started</SignInButton>
-//           </Button>
-//         </div>
-//       </div>
-//     </header>
-//   );
-// }
-"use client"
-import Link from "next/link";
-import { ShoppingBag, Menu, X } from "lucide-react";
-import { SignInButton, UserButton } from "@clerk/nextjs";
+import React, { useState, useRef, useEffect } from "react";
+import { Search, ShoppingCart, User, Heart, Menu, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
-export default function Navbar() {
+const Navbar = ({ onSearch }) => {
+  const [searchTerm, setSearchTerm] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+  const {user} = useUser();
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (onSearch) {
+      onSearch(searchTerm);
+    }
+  };
+
+  const router = useRouter();
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [userMenuRef]);
+
+  const categories = [
+    "Clothing",
+    "Footwear",
+    "Accessories",
+    "Electronics",
+    "Home & Living",
+    "Beauty",
+  ];
+
+  // Mock user data - in a real app this would come from context/state
+  const userData = {
+    name: user?.fullName || "John Doe",
+    avatar: user?.imageUrl || "/api/placeholder/40/40", // Using placeholder since actual images aren't available
+    loyaltyLevel: "Standard"
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-white shadow-sm">
-      <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-6 md:gap-10">
-          <Link href="/" className="flex items-center space-x-2 transition-colors hover:opacity-80">
-            <ShoppingBag className="h-6 w-6 text-blue-600" />
-            <span className="font-bold text-lg tracking-wide inline-block text-blue-600">STYLEHUB</span>
-          </Link>
-          
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex gap-6">
-            <Link
-              href="#"
-              className="text-sm font-medium transition-colors hover:text-blue-600 relative group"
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      {/* Top bar with logo, search, and icons */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo and mobile menu button */}
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <button
+                className="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-700"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+              <Link href="/" className="flex items-center">
+                <span className="text-xl font-bold text-blue-600">ShopHub</span>
+              </Link>
+            </div>
+
+            {/* Desktop category menu */}
+            <nav className="hidden md:ml-8 md:flex md:space-x-6">
+              {categories.slice(0, 4).map((category) => (
+                <Link
+                  key={category}
+                  href={`/category/${category.toLowerCase()}`}
+                  className="text-gray-600 hover:text-blue-600 px-1 py-2 text-sm font-medium"
+                >
+                  {category}
+                </Link>
+              ))}
+              <div className="relative group">
+                <button className="text-gray-600 hover:text-blue-600 px-1 py-2 text-sm font-medium flex items-center">
+                  More
+                  <svg
+                    className="ml-1 h-4 w-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block">
+                  {categories.slice(4).map((category) => (
+                    <Link
+                      key={category}
+                      href={`/category/${category.toLowerCase()}`}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      {category}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </nav>
+          </div>
+
+          {/* Search bar - hidden on mobile */}
+          <div className="hidden md:flex flex-1 max-w-md mx-4">
+            <form onSubmit={handleSearchSubmit} className="w-full">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <Input
+                  type="text"
+                  placeholder="Search for products..."
+                  className="pl-10 pr-4 py-2 w-full"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </form>
+          </div>
+
+          {/* Icons */}
+          <div className="flex items-center space-x-4">
+            <button className="p-2 text-gray-500 hover:text-blue-600">
+              <Heart className="h-6 w-6" />
+            </button>
+            {/* User icon with dropdown */}
+            <div className="relative" ref={userMenuRef}>
+              <button 
+                className="p-2 text-gray-500 hover:text-blue-600"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              >
+                <User className="h-6 w-6" />
+              </button>
+              
+              {/* User menu dropdown */}
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-2 z-10">
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <img
+                          className="h-10 w-10 rounded-full"
+                          src={userData.avatar}
+                          alt={userData.name}
+                        />
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-medium text-gray-700">{userData.name}</p>
+                        <div className="flex items-center">
+                          <span className="text-xs text-gray-500">Loyalty Level: </span>
+                          <span className="ml-1 text-xs font-medium text-blue-600">{userData.loyaltyLevel}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="py-1">
+                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      Your Profile
+                    </Link>
+                    <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      Your Orders
+                    </Link>
+                    <Link href="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      Settings
+                    </Link>
+                    <Link href="/logout" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      Sign out
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => router.push(`/cartpage`)}
+              className="p-2 text-gray-500 hover:text-blue-600 relative"
             >
-              New Arrivals
-              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium transition-colors hover:text-blue-600 relative group"
-            >
-              Women
-              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium transition-colors hover:text-blue-600 relative group"
-            >
-              Men
-              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium transition-colors hover:text-blue-600 relative group"
-            >
-              Accessories
-              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
-            </Link>
-          </nav>
+              <ShoppingCart className="h-6 w-6" />
+              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-blue-600 rounded-full">
+                3
+              </span>
+            </button>
+          </div>
         </div>
-        
-        <div className="flex items-center gap-4">
-          <Button asChild variant="secondary" className="text-blue-600 font-medium shadow-sm hover:shadow-md transition-all hidden sm:inline-flex">
-            <SignInButton>Get Started</SignInButton>
-          </Button>
-          
-          {/* Mobile menu button */}
-          <button 
-            className="md:hidden text-gray-700 hover:text-blue-600 transition-colors"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+
+        {/* Mobile search - only visible on mobile */}
+        <div className="md:hidden pb-4">
+          <form onSubmit={handleSearchSubmit} className="w-full">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <Input
+                type="text"
+                placeholder="Search products..."
+                className="pl-10 pr-4 py-2 w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </form>
         </div>
       </div>
-      
-      {/* Mobile Navigation */}
-      {isMenuOpen && (
-        <div className="md:hidden py-4 px-4 bg-white border-t">
-          <nav className="flex flex-col space-y-4">
+
+      {/* Mobile menu - only visible when menu is open */}
+      <div className={`md:hidden ${isMenuOpen ? "block" : "hidden"}`}>
+        <div className="pt-2 pb-4 space-y-1 border-t border-gray-200">
+          {categories.map((category) => (
             <Link
-              href="#"
-              className="text-sm font-medium transition-colors hover:text-blue-600 py-1"
-              onClick={toggleMenu}
+              key={category}
+              href={`/category/${category.toLowerCase()}`}
+              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50"
             >
-              New Arrivals
+              {category}
             </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium transition-colors hover:text-blue-600 py-1"
-              onClick={toggleMenu}
-            >
-              Women
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium transition-colors hover:text-blue-600 py-1"
-              onClick={toggleMenu}
-            >
-              Men
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium transition-colors hover:text-blue-600 py-1"
-              onClick={toggleMenu}
-            >
-              Accessories
-            </Link>
-            <Button asChild variant="secondary" className="text-blue-600 font-medium w-full mt-2">
-              <SignInButton>Get Started</SignInButton>
-            </Button>
-          </nav>
+          ))}
         </div>
-      )}
+      </div>
     </header>
   );
-}
+};
+
+export default Navbar;

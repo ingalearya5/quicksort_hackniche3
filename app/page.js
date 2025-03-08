@@ -1,171 +1,117 @@
+"use client";
+import React from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
-  ShoppingBag,
-  Truck,
-  Shield,
-  Clock,
   ChevronRight,
-  Star,
-  Sparkles,
-  TrendingUp,
-  Package,
-  Gift,
-  Zap,
   ShoppingCart,
+  Search,
+  User,
   Heart,
-  Mail,
-  Instagram,
-  Twitter,
-  Facebook,
-  ArrowRight,
-  Check
+  Menu,
 } from "lucide-react";
-import { SignInButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import Featured1 from "./components/Featured1";
+import Featured2 from "./components/Featured2";
 import Navbar from "@/components/Navbar";
 
-export default function Home() {
-  const { userId } = auth();
-  if (userId) {
-    redirect("/homepage");
-  }
+export default function HomePage() {
+  const router = useRouter();
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-white">
+     
+
       <Navbar />
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-40 relative overflow-hidden">
-          {/* Abstract background patterns */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-full h-full">
-              {[...Array(6)].map((_, i) => (
-                <div 
-                  key={i} 
-                  className="absolute rounded-full bg-blue-600"
-                  style={{
-                    width: `${Math.random() * 300 + 100}px`,
-                    height: `${Math.random() * 300 + 100}px`,
-                    top: `${Math.random() * 100}%`,
-                    left: `${Math.random() * 100}%`,
-                    opacity: 0.1,
-                    transform: `scale(${Math.random() * 0.8 + 0.2})`
-                  }}
-                />
+
+      <div className="max-w-[80%] mx-auto">
+        {/* Category Circles */}
+        <section className="py-8">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 gap-2 md:gap-4">
+              {categories.map((category) => (
+                <Link
+                  key={category.name}
+                  href={category.href}
+                  className="flex flex-col items-center group"
+                >
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center bg-gray-100 group-hover:bg-gray-200 transition mb-2">
+                    {category.icon}
+                  </div>
+                  <span className="text-xs text-center">{category.name}</span>
+                </Link>
               ))}
             </div>
           </div>
-          
-          <div className="container px-4 md:px-6 max-w-screen-xl mx-auto relative z-10">
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
-              <div className="flex flex-col justify-center space-y-8">
-                <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-sm font-medium mb-2 self-start">
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  New Collection Arrived
-                </div>
-                <div className="space-y-6">
-                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl text-gray-900 leading-tight">
-                    Discover Your <span className="text-blue-600">Style</span>, Elevate Your <span className="text-blue-600">Wardrobe</span>
-                  </h1>
-                  <p className="max-w-[600px] text-gray-600 md:text-xl leading-relaxed">
-                    Shop the latest trends with personalized recommendations. Join our community of fashion enthusiasts today.
+        </section>
+
+        {/* Banner Slider */}
+        <section className="mb-12">
+          <div className="container mx-auto px-4">
+            <div className="relative overflow-hidden rounded-lg">
+              <div className="flex items-center justify-between bg-gradient-to-r from-black to-gray-800 text-white p-8 md:p-12">
+                <div className="max-w-lg">
+                  <h2 className="text-3xl md:text-5xl font-bold mb-4">
+                    BIG CART
+                  </h2>
+                  <p className="text-xl md:text-2xl font-light mb-6">
+                    Save more with every extra item!
                   </p>
+                  <p className="text-lg font-medium mb-4">Up to 70% Off</p>
+                  <button
+                    onClick={() => router.push(`/products`)}
+                    className="bg-white text-black py-2 px-6 rounded-md font-medium hover:bg-gray-100 transition"
+                  >
+                    View All Products
+                  </button>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-4 mt-4">
-                  <Button size="lg" className="px-8 py-6 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all rounded-xl group">
-                    <span>Shop Now</span>
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                  <Button size="lg" variant="outline" className="px-8 py-6 border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors rounded-xl">
-                    <span>Explore Collections</span>
-                    <ChevronRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </div>
-                <div className="flex items-center space-x-4 mt-6">
-                  <div className="flex -space-x-2">
-                    {[...Array(4)].map((_, i) => (
-                      <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-xs text-white border-2 border-white">
-                        {String.fromCharCode(65 + i)}
-                      </div>
-                    ))}
+                <div className="hidden md:block">
+                  <div className="w-64 h-64 bg-gray-700 rounded-full flex items-center justify-center opacity-30">
+                    <ShoppingCart className="w-32 h-32" />
                   </div>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-semibold">2,500+</span> happy customers this week
-                  </p>
                 </div>
               </div>
-              <div className="relative h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-blue-100 via-blue-50 to-white border border-blue-100 transform transition-transform hover:scale-[1.02] duration-300">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-5/6 h-5/6 relative flex items-center justify-center">
-                    <div className="absolute w-64 h-64 bg-blue-600 rounded-full opacity-20 animate-pulse" />
-                    <div className="w-48 h-48 bg-white rounded-xl shadow-xl p-8">
-                      <div className="h-full flex flex-col justify-between">
-                        <div className="flex justify-between items-start">
-                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <ShoppingBag className="w-6 h-6 text-blue-600" />
-                          </div>
-                          <Heart className="w-6 h-6 text-red-400" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="h-3 w-24 bg-gray-200 rounded-full" />
-                          <div className="h-6 w-32 bg-gray-300 rounded-full" />
-                          <div className="flex items-center gap-1">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                            ))}
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <div className="h-4 w-16 bg-gray-200 rounded-full" />
-                            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                              <ShoppingCart className="w-4 h-4 text-white" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+                <div className="flex space-x-2">
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-2 h-2 rounded-full ${
+                        i === 0 ? "bg-white" : "bg-gray-400"
+                      }`}
+                    />
+                  ))}
                 </div>
-                <div className="absolute -right-6 top-1/4 w-24 h-24 bg-yellow-300 rounded-full opacity-20" />
-                <div className="absolute left-10 bottom-10 w-16 h-16 bg-blue-400 rounded-full opacity-20" />
-                <div className="absolute right-1/4 bottom-1/3 w-32 h-32 bg-purple-400 rounded-full opacity-10" />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Trending Categories */}
-        <section className="w-full py-16 bg-white">
-          <div className="container px-4 md:px-6 max-w-screen-xl mx-auto">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-sm font-medium mb-2">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Popular Categories
-              </div>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-gray-900">
-                Shop By Category
-              </h2>
-              <p className="max-w-[700px] text-gray-600 md:text-lg">
-                Explore our curated collections across different fashion categories
-              </p>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-              {[
-                { name: "Casual", icon: <ShoppingBag /> },
-                { name: "Formal", icon: <Package /> },
-                { name: "Sports", icon: <Zap /> },
-                { name: "Accessories", icon: <Gift /> },
-                { name: "Winter", icon: <Shield /> },
-                { name: "Summer", icon: <Star /> }
-              ].map((category, index) => (
-                <div key={index} className="flex flex-col items-center space-y-4 p-6 rounded-xl bg-gradient-to-b from-blue-50 to-white border border-blue-100 hover:border-blue-300 transition-all shadow-sm hover:shadow-md cursor-pointer group">
-                  <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                    <div className="text-blue-600 group-hover:text-white transition-colors">
-                      {category.icon}
+        {/* Collections Section */}
+        <section className="mb-12">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {collections.map((collection) => (
+                <div
+                  key={collection.title}
+                  className="relative group overflow-hidden rounded-lg"
+                >
+                  <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                    <div className="text-6xl text-gray-300">
+                      {collection.icon}
                     </div>
                   </div>
-                  <h3 className="font-semibold text-gray-900">{category.name}</h3>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-4">
+                    <h3 className="text-xl font-bold text-white mb-1">
+                      {collection.title}
+                    </h3>
+                    <p className="text-sm text-gray-200 mb-3">
+                      {collection.description}
+                    </p>
+                    <div className="flex items-center text-white text-sm font-medium">
+                      <span>Explore</span>
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -173,380 +119,331 @@ export default function Home() {
         </section>
 
         {/* Featured Products */}
-        <section className="w-full py-16 bg-gradient-to-b from-white to-blue-50">
-          <div className="container px-4 md:px-6 max-w-screen-xl mx-auto">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-sm font-medium mb-2">
-                <Sparkles className="h-4 w-4 mr-2" />
-                New Arrivals
-              </div>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-gray-900">
-                Featured Products
-              </h2>
-              <p className="max-w-[700px] text-gray-600 md:text-lg">
-                Discover our handpicked selection of trending items flying off the shelves
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { name: "Premium Cotton Tee", price: "$49.99", rating: 5, reviews: 42 },
-                { name: "Designer Denim Jacket", price: "$129.00", rating: 4, reviews: 28 },
-                { name: "Classic Fit Chinos", price: "$79.50", rating: 5, reviews: 36 },
-                { name: "Signature Hoodie", price: "$89.00", rating: 4, reviews: 19 }
-              ].map((product, index) => (
-                <div
-                  key={index}
-                  className="group relative overflow-hidden rounded-xl border border-blue-100 bg-white shadow-md hover:shadow-xl transition-all duration-300"
-                >
-                  <div className="aspect-square overflow-hidden bg-gradient-to-br from-blue-100 to-blue-50 p-8 flex items-center justify-center">
-                    <ShoppingBag className="w-24 h-24 text-blue-300 group-hover:text-blue-500 transition-colors" />
-                  </div>
-                  <div className="absolute top-4 right-4">
-                    <div className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center">
-                      <Heart className="h-4 w-4 text-gray-400 group-hover:text-red-400 transition-colors" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-semibold text-gray-900">{product.name}</h3>
-                    <div className="flex items-center gap-2 my-2">
-                      <div className="flex items-center">
-                        {Array(product.rating)
-                          .fill(0)
-                          .map((_, i) => (
-                            <Star
-                              key={i}
-                              className="h-4 w-4 fill-yellow-400 text-yellow-400"
-                            />
-                          ))}
-                        {Array(5 - product.rating)
-                          .fill(0)
-                          .map((_, i) => (
-                            <Star
-                              key={i}
-                              className="h-4 w-4 text-gray-200"
-                            />
-                          ))}
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        ({product.reviews})
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between mt-3">
-                      <span className="font-semibold text-gray-900">{product.price}</span>
-                      <Button size="sm" className="rounded-full border-blue-600 bg-blue-600 text-white hover:bg-blue-700 transition-colors group">
-                        <ShoppingCart className="h-4 w-4 mr-1 group-hover:scale-110 transition-transform" />
-                        Add
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-center mt-12">
-              <Button variant="outline" className="gap-1 group border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors rounded-full px-6">
-                View All Products <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
-          </div>
-        </section>
+        <Featured1 products={products}/>
 
-        {/* Benefits Section */}
-        <section className="w-full py-16 bg-white">
-          <div className="container px-4 md:px-6 max-w-screen-xl mx-auto">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-sm font-medium mb-2">
-                <Shield className="h-4 w-4 mr-2" />
-                Our Promise
-              </div>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-gray-900">
-                Why Shop With Us
-              </h2>
-              <p className="max-w-[700px] text-gray-600 md:text-lg">
-                We're committed to providing the best shopping experience possible
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { 
-                  icon: <Truck />, 
-                  title: "Free Express Shipping", 
-                  description: "Free shipping on all orders over $50. Same-day dispatch on orders before 2pm."
-                },
-                { 
-                  icon: <Shield />, 
-                  title: "Secure Payments", 
-                  description: "All transactions are secured with bank-level encryption and multiple payment options."
-                },
-                { 
-                  icon: <Clock />, 
-                  title: "24/7 Premium Support", 
-                  description: "Our dedicated support team is available round-the-clock to assist you."
-                },
-                { 
-                  icon: <ShoppingBag />, 
-                  title: "Hassle-Free Returns", 
-                  description: "30-day money-back guarantee with free return shipping on all items."
-                }
-              ].map((benefit, index) => (
-                <div key={index} className="flex flex-col items-center text-center space-y-4 rounded-xl border border-blue-100 p-6 bg-gradient-to-b from-white to-blue-50 hover:border-blue-300 transition-colors shadow-md hover:shadow-lg group">
-                  <div className="p-4 rounded-full bg-blue-100 group-hover:bg-blue-600 transition-colors mb-2">
-                    <div className="h-8 w-8 text-blue-600 group-hover:text-white transition-colors">
-                      {benefit.icon}
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900">{benefit.title}</h3>
-                  <p className="text-sm text-gray-600">
-                    {benefit.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <Featured2 products={products}/>
 
-        {/* Testimonials */}
-        <section className="w-full py-16 bg-blue-50">
-          <div className="container px-4 md:px-6 max-w-screen-xl mx-auto">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-sm font-medium mb-2">
-                <Star className="h-4 w-4 mr-2 fill-blue-600" />
-                Customer Love
-              </div>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-gray-900">
-                What Our Customers Say
-              </h2>
-              <p className="max-w-[700px] text-gray-600 md:text-lg">
-                Don't just take our word for it — hear from our satisfied customers
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  name: "Sarah J.",
-                  review: "The quality of clothes is amazing! Fast shipping and the customer service team went above and beyond to help me with sizing."
-                },
-                {
-                  name: "Michael T.",
-                  review: "I've been shopping here for over a year now and have never been disappointed. Their style selection is always on point and ahead of trends."
-                },
-                {
-                  name: "Emily L.",
-                  review: "The mobile app makes shopping so convenient. I can browse and order my favorite items in just a few taps. Highly recommend!"
-                }
-              ].map((testimonial, index) => (
-                <div key={index} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all">
-                  <div className="flex flex-col h-full justify-between">
-                    <div className="mb-4">
-                      <div className="flex mb-4">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                        ))}
-                      </div>
-                      <p className="text-gray-600 italic">"{testimonial.review}"</p>
-                    </div>
-                    <div className="flex items-center mt-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                        <span className="text-blue-600 font-semibold">
-                          {testimonial.name.charAt(0)}
-                        </span>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
-                        <p className="text-sm text-gray-500">Verified Customer</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* App Promo */}
-        <section className="w-full py-16 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-          <div className="container px-4 md:px-6 max-w-screen-xl mx-auto">
-            <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
-              <div className="space-y-6">
-                <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-500 bg-opacity-30 text-white text-sm font-medium mb-2">
-                  <Zap className="h-4 w-4 mr-2" />
-                  Mobile Shopping
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">
-                  Shop Anytime, Anywhere with Our App
-                </h2>
-                <p className="text-blue-100 md:text-lg max-w-[600px]">
-                  Download our mobile app for a seamless shopping experience. 
-                  Get exclusive app-only deals and personalized recommendations.
+        {/* Deals & Promotions */}
+        <section className="mb-12">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-yellow-50 p-6 rounded-lg">
+                <h3 className="text-xl font-bold mb-2">Steal the Deal</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Limited time offers on top brands
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 mt-6">
-                  <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all">
-                    <ShoppingBag className="mr-2 h-5 w-5" />
-                    App Store
-                  </Button>
-                  <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg transition-all">
-                    <ShoppingBag className="mr-2 h-5 w-5" />
-                    Google Play
-                  </Button>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold">85%</span>
+                  <span className="text-lg font-medium ml-1">OFF</span>
                 </div>
-                <div className="flex items-center space-x-4 mt-8">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex items-center">
-                      <Check className="h-5 w-5 text-blue-300 mr-2" />
-                      <span className="text-blue-100">{
-                        ["Exclusive Deals", "Faster Checkout", "Order Tracking"][i]
-                      }</span>
-                    </div>
-                  ))}
-                </div>
+                <button className="bg-black text-white py-2 px-4 rounded text-sm font-medium hover:bg-gray-800 transition">
+                  Shop Now
+                </button>
               </div>
-              <div className="relative h-[400px] lg:h-[500px] flex items-center justify-center">
-                <div className="w-64 h-[500px] bg-gradient-to-b from-blue-800 to-blue-900 rounded-[40px] p-3 shadow-2xl relative">
-                  <div className="w-full h-full bg-gradient-to-b from-blue-100 to-white rounded-[32px] overflow-hidden">
-                    <div className="w-full h-16 bg-blue-600 flex items-center justify-center text-white text-lg font-semibold">
-                      StyleHub App
-                    </div>
-                    <div className="p-4 space-y-4">
-                      <div className="w-full h-40 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <ShoppingBag className="h-16 w-16 text-blue-400" />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="h-4 w-3/4 bg-gray-200 rounded-full" />
-                        <div className="h-3 w-1/2 bg-gray-200 rounded-full" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[...Array(4)].map((_, i) => (
-                          <div key={i} className="h-24 bg-blue-50 rounded-lg flex items-center justify-center">
-                            <div className="h-12 w-12 bg-blue-200 rounded-lg flex items-center justify-center">
-                              <ShoppingBag className="h-6 w-6 text-blue-600" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="w-full h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-                        Shop Now
-                      </div>
-                    </div>
-                  </div>
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-1 bg-blue-950 rounded-full opacity-30" />
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg">
+                <h3 className="text-xl font-bold mb-2">New Arrivals</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Be the first to grab the latest styles
+                </p>
+                <div className="mb-4">
+                  <span className="text-lg font-medium">Starting at </span>
+                  <span className="text-2xl font-bold">₹499</span>
                 </div>
+                <button className="bg-blue-600 text-white py-2 px-4 rounded text-sm font-medium hover:bg-blue-700 transition">
+                  Explore
+                </button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Newsletter */}
-        <section className="w-full py-16 bg-white border-t border-blue-100">
-          <div className="container px-4 md:px-6 max-w-screen-xl mx-auto">
-            <div className="max-w-3xl mx-auto text-center">
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-sm font-medium mb-4">
-                <Mail className="h-4 w-4 mr-2" />
-                Stay Connected
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tighter text-gray-900 mb-4">
-                Join Our Newsletter
-              </h2>
-              <p className="text-gray-600 md:text-lg mb-8 max-w-2xl mx-auto">
-                Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals. 
-                Be the first to know about new arrivals and exclusive promotions.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-                <div className="flex-1 min-w-0">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="w-full h-12 px-4 py-2 text-gray-900 border border-blue-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-shadow"
-                  />
-                </div>
-                <Button className="h-12 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all rounded-full px-6">
-                  Subscribe
-                </Button>
-              </div>
-              <p className="text-xs text-gray-500 mt-4">
-                By subscribing, you agree to our Terms and Privacy Policy.
-              </p>
-            </div>
-          </div>
-        </section>
-      </main>
-      <footer className="w-full border-t border-blue-100 py-12 bg-gradient-to-b from-blue-50 to-white">
-        <div className="container px-4 md:px-6 max-w-screen-xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">StyleHub</h3>
-              <p className="text-sm text-gray-600">
-                Redefining fashion experiences with curated collections and
-                exceptional customer service since 2020.
-              </p>
-              <div className="flex space-x-4">
-                <a href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  <Instagram className="h-5 w-5" />
-                </a>
-                <a href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  <Twitter className="h-5 w-5" />
-                </a>
-                <a href="#" className="text-gray-500 hover:text-blue-600 transition-colors">
-                  <Facebook className="h-5 w-5" />
-                </a>
-              </div>
-            </div>
-            {[
-              {
-                title: "Shop",
-                links: ["Men", "Women", "Accessories", "Sale", "New Arrivals"]
-              },
-              {
-                title: "Company",
-                links: ["About Us", "Careers", "Store Locations", "Our Blog", "Reviews"]
-              },
-              {
-                title: "Support",
-                links: ["Help Center", "Returns & Exchanges", "Shipping Info", "Order Tracking", "Contact Us"]
-              }
-            ].map((column, index) => (
-              <div key={index} className="space-y-4">
-                <h3 className="text-lg font-bold text-gray-900">{column.title}</h3>
+        {/* Footer */}
+        <footer className="bg-gray-50 border-t border-gray-100 pt-10 pb-6">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+              <div>
+                <h4 className="font-bold mb-4">Shop</h4>
                 <ul className="space-y-2">
-                  {column.links.map((link, i) => (
-                    <li key={i}>
-                      <Link
-                        href="#"
-                        className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
-                      >
-                        {link}
-                      </Link>
-                    </li>
-                  ))}
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Women
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Men
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Kids
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Home & Living
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Beauty
+                    </Link>
+                  </li>
                 </ul>
               </div>
-            ))}
-          </div>
-          <div className="pt-8 border-t border-blue-100 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-center md:text-left text-sm text-gray-600">
-              © {new Date().getFullYear()} StyleHub. All rights reserved.
-            </p>
-            <div className="flex gap-6">
-              <Link
-                href="#"
-                className="text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
-              >
-                Terms of Service
-              </Link>
-              <Link
-                href="#"
-                className="text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                href="#"
-                className="text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
-              >
-                Cookie Settings
-              </Link>
+              <div>
+                <h4 className="font-bold mb-4">Customer Service</h4>
+                <ul className="space-y-2">
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Contact Us
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      FAQs
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Shipping
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Returns
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Size Guide
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-bold mb-4">About</h4>
+                <ul className="space-y-2">
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Our Story
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Careers
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Corporate Responsibility
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      Investors
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-bold mb-4">Stay Connected</h4>
+                <p className="text-sm text-gray-600 mb-4">
+                  Subscribe to get special offers, free giveaways, and new
+                  arrivals.
+                </p>
+                <div className="flex">
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    className="flex-1 bg-white border border-gray-300 rounded-l-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button className="bg-blue-600 text-white px-4 py-2 rounded-r-md text-sm hover:bg-blue-700 transition">
+                    Join
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-gray-200 pt-6 flex flex-col md:flex-row justify-between items-center">
+              <p className="text-sm text-gray-500 mb-4 md:mb-0">
+                © 2025 StyleHub. All rights reserved.
+              </p>
+              <div className="flex space-x-4">
+                <Link href="#" className="text-gray-400 hover:text-gray-600">
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </Link>
+                <Link href="#" className="text-gray-400 hover:text-gray-600">
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </Link>
+                <Link href="#" className="text-gray-400 hover:text-gray-600">
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                  </svg>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 }
+
+// Data
+const categories = [
+  { name: "MY FEED", href: "/feed", icon: "🏠" },
+  { name: "KURTAS", href: "/kurtas", icon: "👚" },
+  { name: "TOPS", href: "/tops", icon: "👕" },
+  { name: "DRESSES", href: "/dresses", icon: "👗" },
+  { name: "SAREES", href: "/sarees", icon: "🧣" },
+  { name: "SUITS", href: "/suits", icon: "👔" },
+  { name: "ETHNIC SETS", href: "/ethnic-sets", icon: "👘" },
+  { name: "BOTTOMS", href: "/bottoms", icon: "👖" },
+  { name: "BAGS", href: "/bags", icon: "👜" },
+  { name: "FOOTWEAR", href: "/footwear", icon: "👠" },
+  { name: "ADD ONS", href: "/add-ons", icon: "✨" },
+  { name: "WINTER", href: "/winter", icon: "🧣" },
+];
+
+const collections = [
+  {
+    title: "Raw & Edgy",
+    description: "Ripped, rugged, ready to rock",
+    href: "/collection/raw-edgy",
+    icon: "👖",
+  },
+  {
+    title: "Vacation Vibes",
+    description: "Perfect beachside getaway looks",
+    href: "/collection/vacation-vibes",
+    icon: "🏖️",
+  },
+  {
+    title: "Elegant Sarees",
+    description: "Traditional with a modern twist",
+    href: "/collection/elegant-sarees",
+    icon: "👘",
+  },
+  {
+    title: "Office Chic",
+    description: "Professional and stylish workwear",
+    href: "/collection/office-chic",
+    icon: "💼",
+  },
+];
+
+const products = [
+  {
+    id: 1,
+    name: "Slim Fit Cotton Shirt",
+    price: 1299,
+    originalPrice: 1999,
+    discount: 35,
+    rating: 4,
+    reviews: 128,
+  },
+  {
+    id: 2,
+    name: "Floral Print Maxi Dress",
+    price: 1899,
+    originalPrice: 2499,
+    discount: 24,
+    rating: 5,
+    reviews: 86,
+  },
+  {
+    id: 3,
+    name: "Classic Denim Jeans",
+    price: 1599,
+    originalPrice: null,
+    discount: null,
+    rating: 4,
+    reviews: 210,
+  },
+  {
+    id: 4,
+    name: "Embroidered Kurta Set",
+    price: 2199,
+    originalPrice: 3299,
+    discount: 33,
+    rating: 4,
+    reviews: 64,
+  },
+];
+
+
+// <Header
+// onSearch={handleSearch}
+// onCategorySelect={handleCategorySelect}
+// onFilterChange={handleFilterChange}
+// onSortChange={handleSortChange}
+// />
