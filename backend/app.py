@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
@@ -12,6 +11,8 @@ import re
 from fashion_advice import get_fashion_advice
 from faqs import get_faq_answer
 import faiss
+from gemini_handler import get_gemini_response
+from product_availability import check_product_availability
 
 # Load environment variables
 load_dotenv()
@@ -106,10 +107,12 @@ def chatbot():
             return jsonify({'response': 'Please provide a message.'})
         
         # Determine the intent of the user message
-        if is_product_search(user_message):
+        if is_availability_check(user_message):
+            response = check_product_availability(user_message)
+        elif is_product_search(user_message):
             response = handle_product_search(user_message)
         elif is_fashion_advice(user_message):
-            response = get_fashion_advice(user_message)
+            response = get_gemini_response(user_message, "fashion_advice")
         elif is_faq(user_message):
             response = get_faq_answer(user_message)
         else:
@@ -117,7 +120,7 @@ def chatbot():
             if "product" in user_message.lower() or "find" in user_message.lower() or "search" in user_message.lower():
                 response = handle_product_search(user_message)
             else:
-                response = "I'm not sure how to help with that. You can ask me about products, fashion advice, or general questions about ShopMart."
+                response = get_gemini_response(user_message, "general")
         
         return jsonify({'response': response})
     except Exception as e:
@@ -139,12 +142,16 @@ def is_product_search(message):
     return any(keyword in message.lower() for keyword in product_keywords)
 
 def is_fashion_advice(message):
-    fashion_keywords = ['wear', 'outfit', 'fashion', 'style', 'trend', 'dress', 'match']
+    fashion_keywords = ['wear', 'outfit', 'fashion', 'style', 'trend', 'dress', 'match', 'fashionable', 'stylish']
     return any(keyword in message.lower() for keyword in fashion_keywords)
 
 def is_faq(message):
     faq_keywords = ['policy', 'shipping', 'return', 'delivery', 'payment', 'track', 'order', 'how do i', 'how to']
     return any(keyword in message.lower() for keyword in faq_keywords)
+
+def is_availability_check(message):
+    availability_keywords = ['available', 'in stock', 'do you have', 'do you sell', 'availability']
+    return any(keyword in message.lower() for keyword in availability_keywords)
 
 # Product search handler
 def handle_product_search(query):
@@ -155,6 +162,12 @@ def handle_product_search(query):
             
         # Extract price constraints if any
         max_price = extract_max_price(query)
+        
+        # Extract rating constraints if any
+        min_rating = extract_min_rating(query)
+        
+        # Extract review constraints if any
+        good_reviews = extract_good_reviews(query)
         
         # Extract categories if any
         category = extract_category(query)
@@ -192,6 +205,22 @@ def handle_product_search(query):
                     continue
             except (ValueError, TypeError):
                 # If price can't be parsed, skip price filtering
+                pass
+                
+            # Handle rating filtering
+            try:
+                rating = product.get('rating', 0)
+                if min_rating and rating < min_rating:
+                    continue
+            except (ValueError, TypeError):
+                pass
+                
+            # Handle review filtering
+            try:
+                reviews = product.get('reviews', '')
+                if good_reviews and 'good' not in reviews.lower():
+                    continue
+            except (ValueError, TypeError):
                 pass
                 
             # Handle category filtering with safe category extraction
@@ -240,6 +269,26 @@ def extract_max_price(query):
         if match:
             return float(match.group(1))
     return None
+
+# Helper function to extract minimum rating from query
+def extract_min_rating(query):
+    rating_patterns = [
+        r'rated over (\d+)',
+        r'rating above (\d+)',
+        r'rated above (\d+)',
+        r'rating over (\d+)'
+    ]
+    
+    for pattern in rating_patterns:
+        match = re.search(pattern, query)
+        if match:
+            return float(match.group(1))
+    return None
+
+# Helper function to extract good reviews from query
+def extract_good_reviews(query):
+    good_review_keywords = ['good reviews', 'positive reviews', 'highly rated']
+    return any(keyword in query.lower() for keyword in good_review_keywords)
 
 # Helper function to extract category from query
 def extract_category(query):
