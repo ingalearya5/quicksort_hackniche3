@@ -13,12 +13,18 @@ from faqs import get_faq_answer
 import faiss
 from gemini_handler import get_gemini_response
 from product_availability import check_product_availability
+# Add new imports for language support
+from langdetect import detect, LangDetectException
+from googletrans import Translator
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
+# Initialize translator
+translator = Translator()
 
 # MongoDB connection
 MONGO_URI = os.getenv("MONGO_URI")
@@ -47,6 +53,20 @@ model = SentenceTransformer('all-MiniLM-L6-v2')  # Small model, good for product
 embedding_size = model.get_sentence_embedding_dimension()
 index = faiss.IndexFlatL2(embedding_size)
 product_ids = []  # To keep track of product IDs corresponding to embeddings
+
+# Supported languages and their default welcome messages
+SUPPORTED_LANGUAGES = {
+    'en': 'Hi there! 👋 How can I help you today?',
+    'es': '¡Hola! 👋 ¿Cómo puedo ayudarte hoy?',
+    'fr': 'Bonjour! 👋 Comment puis-je vous aider aujourd\'hui?',
+    'de': 'Hallo! 👋 Wie kann ich Ihnen heute helfen?',
+    'zh-cn': '你好！👋 今天我能帮你什么忙？',
+    'hi': 'नमस्ते! 👋 आज मैं आपकी कैसे मदद कर सकता हूँ?',
+    'ja': 'こんにちは！👋 今日はどのようにお手伝いできますか？',
+    'ru': 'Привет! 👋 Чем я могу помочь вам сегодня?',
+    'ar': 'مرحبًا! 👋 كيف يمكنني مساعدتك اليوم؟',
+    'pt': 'Olá! 👋 Como posso ajudá-lo hoje?'
+}
 
 # Function to initialize or update the FAISS index
 def update_faiss_index():
@@ -96,36 +116,104 @@ try:
 except Exception as e:
     print(f"Error initializing FAISS index: {e}")
 
+# Function to detect language
+def detect_language(text):
+    try:
+        return detect(text)
+    except LangDetectException:
+        return 'en'  # Default to English if detection fails
+
+# Function to translate text
+def translate_text(text, source_lang, target_lang='en'):
+    if source_lang == target_lang:
+        return text
+    
+    try:
+        translation = translator.translate(text, src=source_lang, dest=target_lang)
+        return translation.text
+    except Exception as e:
+        print(f"Translation error: {e}")
+        return text  # Return original text if translation fails
+
 # Define API routes
 @app.route('/api/chatbot', methods=['POST'])
 def chatbot():
     try:
         data = request.json
         user_message = data.get('message', '').strip()
+        client_lang = data.get('language', None)
         
         if not user_message:
-            return jsonify({'response': 'Please provide a message.'})
+            return jsonify({'response': 'Please provide a message.', 'language': 'en'})
         
-        # Determine the intent of the user message
-        if is_availability_check(user_message):
-            response = check_product_availability(user_message)
-        elif is_product_search(user_message):
-            response = handle_product_search(user_message)
-        elif is_fashion_advice(user_message):
-            response = get_gemini_response(user_message, "fashion_advice")
-        elif is_faq(user_message):
-            response = get_faq_answer(user_message)
+        # Detect message language if not provided by client
+        detected_lang = client_lang or detect_language(user_message)
+        
+        # Normalize language code
+        detected_lang = detected_lang.lower().split('-')[0] if '-' in detected_lang else detected_lang.lower()
+        
+        # Translate to English for processing
+        english_message = translate_text(user_message, detected_lang, 'en')
+        
+        # Process the translated message
+        if is_availability_check(english_message):
+            english_response = check_product_availability(english_message)
+        elif is_product_search(english_message):
+            english_response = handle_product_search(english_message)
+        elif is_fashion_advice(english_message):
+            english_response = get_gemini_response(english_message, "fashion_advice")
+        elif is_faq(english_message):
+            english_response = get_faq_answer(english_message)
         else:
             # Try to find the best matching response
-            if "product" in user_message.lower() or "find" in user_message.lower() or "search" in user_message.lower():
-                response = handle_product_search(user_message)
+            if "product" in english_message.lower() or "find" in english_message.lower() or "search" in english_message.lower():
+                english_response = handle_product_search(english_message)
             else:
-                response = get_gemini_response(user_message, "general")
+                english_response = get_gemini_response(english_message, "general")
         
-        return jsonify({'response': response})
+        # Translate response back to detected language
+        if detected_lang != 'en' and detected_lang in SUPPORTED_LANGUAGES:
+            response = translate_text(english_response, 'en', detected_lang)
+        else:
+            response = english_response
+        
+        return jsonify({'response': response, 'language': detected_lang})
     except Exception as e:
         print(f"Error in chatbot endpoint: {e}")
-        return jsonify({'response': 'Sorry, I encountered an error processing your request.'})
+        error_message = 'Sorry, I encountered an error processing your request.'
+        
+        # Try to translate the error message
+        try:
+            if client_lang and client_lang != 'en' and client_lang in SUPPORTED_LANGUAGES:
+                error_message = translate_text(error_message, 'en', client_lang)
+        except:
+            pass  # Fallback to English error
+            
+        return jsonify({'response': error_message, 'language': client_lang or 'en'})
+
+# New endpoint to get welcome message in specified language
+@app.route('/api/get-welcome-message', methods=['GET'])
+def get_welcome_message():
+    lang = request.args.get('language', 'en')
+    
+    # Normalize language code
+    lang = lang.lower().split('-')[0] if '-' in lang else lang.lower()
+    
+    # Get welcome message for the specified language or default to English
+    welcome_message = SUPPORTED_LANGUAGES.get(lang, SUPPORTED_LANGUAGES['en'])
+    
+    return jsonify({
+        'message': welcome_message,
+        'language': lang,
+        'supportedLanguages': list(SUPPORTED_LANGUAGES.keys())
+    })
+
+# New endpoint to get all supported languages
+@app.route('/api/supported-languages', methods=['GET'])
+def supported_languages():
+    return jsonify({
+        'languages': list(SUPPORTED_LANGUAGES.keys())
+    })
 
 # Route to manually trigger FAISS index update
 @app.route('/api/update-index', methods=['POST'])

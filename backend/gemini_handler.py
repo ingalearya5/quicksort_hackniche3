@@ -12,13 +12,14 @@ genai.configure(api_key=GEMINI_API_KEY)
 # Configure the model
 model = genai.GenerativeModel('gemini-2.0-flash')
 
-def get_gemini_response(query, response_type):
+def get_gemini_response(query, response_type, target_language='en'):
     """
     Get structured response from Google Gemini model
     
     Args:
         query (str): User's query
         response_type (str): Type of response needed (e.g., 'fashion_advice', 'general')
+        target_language (str): ISO code of the target language
         
     Returns:
         str: Structured response from Gemini
@@ -33,6 +34,8 @@ def get_gemini_response(query, response_type):
             
             Provide concise, professional advice with specific suggestions. Include current trends if relevant.
             Format your response in a friendly, conversational tone.
+            
+            Please respond in {target_language} language.
             """
         else:
             prompt = f"""
@@ -42,6 +45,8 @@ def get_gemini_response(query, response_type):
             
             Provide a concise, professional response. If the query is about products, suggest relevant products.
             Format your response in a friendly, conversational tone.
+            
+            Please respond in {target_language} language.
             """
         
         # Get response from Gemini
