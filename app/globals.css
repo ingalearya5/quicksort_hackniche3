@@ -137,3 +137,8 @@
     scrollbar-width: none;  /* Firefox */
   }
 }
+
+button{
+  cursor: pointer;
+}
+
