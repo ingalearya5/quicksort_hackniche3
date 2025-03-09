@@ -1,17 +1,37 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Search, ShoppingCart, User, Heart, Menu, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import axios from "axios";
 
 const Navbar = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
-  const {user} = useUser();
+  const [loyaltyDetails, setLoyaltyDetails] = useState(null);
+  const { user } = useUser();
+
+  useEffect(() => {
+    if (user?.id) {
+      getLoyaltyDetails();
+    }
+  }, [user?.id]);
+
+  const getLoyaltyDetails = async () => {
+    try {
+      const response = await axios.get(
+        `/api/loyalty-details?userId=${user?.id}`
+      );
+      setLoyaltyDetails(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  console.log(loyaltyDetails);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -49,7 +69,8 @@ const Navbar = ({ onSearch }) => {
   const userData = {
     name: user?.fullName || "John Doe",
     avatar: user?.imageUrl || "/api/placeholder/40/40", // Using placeholder since actual images aren't available
-    loyaltyLevel: "Standard"
+    loyaltyLevel: loyaltyDetails?.tier,
+    loyaltyPoints: loyaltyDetails?.totalPoints,
   };
 
   return (
@@ -137,13 +158,13 @@ const Navbar = ({ onSearch }) => {
             </button>
             {/* User icon with dropdown */}
             <div className="relative" ref={userMenuRef}>
-              <button 
+              <button
                 className="p-2 text-gray-500 hover:text-blue-600"
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               >
                 <User className="h-6 w-6" />
               </button>
-              
+
               {/* User menu dropdown */}
               {isUserMenuOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-2 z-10">
@@ -157,25 +178,51 @@ const Navbar = ({ onSearch }) => {
                         />
                       </div>
                       <div className="ml-3">
-                        <p className="text-sm font-medium text-gray-700">{userData.name}</p>
+                        <p className="text-sm font-medium text-gray-700">
+                          {userData.name}
+                        </p>
                         <div className="flex items-center">
-                          <span className="text-xs text-gray-500">Loyalty Level: </span>
-                          <span className="ml-1 text-xs font-medium text-blue-600">{userData.loyaltyLevel}</span>
+                          <span className="text-xs text-gray-500">
+                            Loyalty Level:{" "}
+                          </span>
+                          <span className="ml-1 text-xs font-medium text-blue-600">
+                            {userData?.loyaltyLevel}
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="text-xs text-gray-500">
+                            Loyalty Points:{" "}
+                          </span>
+                          <span className="ml-1 text-xs font-medium text-blue-600">
+                            {userData?.loyaltyPoints}
+                          </span>
                         </div>
                       </div>
                     </div>
                   </div>
                   <div className="py-1">
-                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
                       Your Profile
                     </Link>
-                    <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link
+                      href="/orders"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
                       Your Orders
                     </Link>
-                    <Link href="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link
+                      href="/settings"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
                       Settings
                     </Link>
-                    <Link href="/logout" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link
+                      href="/logout"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
                       Sign out
                     </Link>
                   </div>

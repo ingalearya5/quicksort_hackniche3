@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ProductCard from "./ProductCard";
 import { useUser } from "@clerk/nextjs";
 
@@ -7,71 +7,72 @@ const Featured2 = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [recommendationSource, setRecommendationSource] = useState("");
+  const [interactionCount, setInteractionCount] = useState(0);
 
   const { user, isLoaded } = useUser();
 
-  useEffect(() => {
+  // Function to refresh recommendations data
+  const fetchRecommendations = useCallback(async () => {
     if (!isLoaded || !user?.id) return;
+    
+    setLoading(true);
+    try {
+      // Use the actual user ID from Clerk
+      const response = await fetch(
+        `http://localhost:5001/api/recommendations?userId=${user.id}&count=4&refresh=true`
+      );
 
-    console.log(user?.id)
-
-    const fetchRecommendations = async () => {
-      setLoading(true);
-      try {
-        // Use the actual user ID from Clerk
-        const response = await fetch(
-          `http://localhost:5001/api/recommendations?userId=${user.id}&count=4`
-        );
-
-        // Check if response is successful
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to fetch recommendations");
-        }
-
-        const data = await response.json();
-        console.log("Received recommendations:", data);
-
-        if (!data.products || data.products.length === 0) {
-          setError("No recommendations available");
-          setLoading(false);
-          return;
-        }
-
-        setProducts(data.products);
-        setRecommendationSource(data.source);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching recommendations:", error);
-
-        // If user not found, try getting popular products as fallback
-        if (error.message === "User not found in the dataset") {
-          try {
-            const fallbackResponse = await fetch(
-              `http://localhost:5001/api/filtered?category=shirt&count=4`
-            );
-
-            if (fallbackResponse.ok) {
-              const fallbackData = await fallbackResponse.json();
-              if (fallbackData.products && fallbackData.products.length > 0) {
-                setProducts(fallbackData.products);
-                setRecommendationSource("fallback_popular");
-                setLoading(false);
-                return;
-              }
-            }
-          } catch (fallbackError) {
-            console.error("Fallback error:", fallbackError);
-          }
-        }
-
-        setError(error.message);
-        setLoading(false);
+      // Check if response is successful
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch recommendations");
       }
-    };
 
-    fetchRecommendations();
+      const data = await response.json();
+      console.log("Received recommendations:", data);
+
+      if (!data.products || data.products.length === 0) {
+        setError("No recommendations available");
+        setLoading(false);
+        return;
+      }
+
+      setProducts(data.products);
+      setRecommendationSource(data.source);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+
+      // If user not found, try getting popular products as fallback
+      if (error.message === "User not found in the dataset") {
+        try {
+          const fallbackResponse = await fetch(
+            `http://localhost:5001/api/filtered?category=shirt&count=4`
+          );
+
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json();
+            if (fallbackData.products && fallbackData.products.length > 0) {
+              setProducts(fallbackData.products);
+              setRecommendationSource("fallback_popular");
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (fallbackError) {
+          console.error("Fallback error:", fallbackError);
+        }
+      }
+
+      setError(error.message);
+      setLoading(false);
+    }
   }, [user?.id, isLoaded]);
+
+  // Run whenever user ID is loaded or interaction count changes
+  useEffect(() => {
+    fetchRecommendations();
+  }, [fetchRecommendations, interactionCount]);
 
   // Add a debug function to manually check what's wrong
   const debugRecommendations = async () => {
@@ -87,6 +88,11 @@ const Featured2 = () => {
     } catch (error) {
       console.error("Debug failed:", error);
     }
+  };
+
+  // Function to trigger recommendation refresh after significant interaction
+  const triggerRecommendationRefresh = () => {
+    setInteractionCount(prev => prev + 1);
   };
 
   // Function to get section title based on recommendation source
@@ -145,6 +151,12 @@ const Featured2 = () => {
             >
               Debug Recommendations
             </button>
+            <button
+              onClick={triggerRecommendationRefresh}
+              className="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Refresh Recommendations
+            </button>
           </div>
         </div>
       </section>
@@ -169,6 +181,12 @@ const Featured2 = () => {
             >
               Debug Recommendations
             </button>
+            <button
+              onClick={triggerRecommendationRefresh}
+              className="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Refresh Recommendations
+            </button>
           </div>
         </div>
       </section>
@@ -181,8 +199,20 @@ const Featured2 = () => {
         <h2 className="text-2xl font-bold mb-6">{getSectionTitle()}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              onInteraction={triggerRecommendationRefresh} 
+            />
           ))}
+        </div>
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={triggerRecommendationRefresh}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          >
+            Refresh Recommendations
+          </button>
         </div>
       </div>
     </section>

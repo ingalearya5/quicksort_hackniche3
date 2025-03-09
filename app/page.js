@@ -25,7 +25,7 @@ export default function HomePage() {
 
       <div className="max-w-[80%] mx-auto">
         {/* Category Circles */}
-        <section className="py-8">
+        {/* <section className="py-8">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 gap-2 md:gap-4">
               {categories.map((category) => (
@@ -42,7 +42,7 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Banner Slider */}
         <section className="mb-12">

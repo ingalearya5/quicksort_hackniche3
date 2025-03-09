@@ -31,6 +31,7 @@ const ProductCard = ({ product }) => {
 
   const getProductDetails = async () => {
     try {
+      console.log("hi")
       const response = await axios.get(
         `http://localhost:3000/api/getProductDetail?id=${product.id}`
       );

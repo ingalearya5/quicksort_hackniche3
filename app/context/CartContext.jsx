@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
-import { useAuth } from '@clerk/nextjs'; // Assuming you're using Clerk for auth
 
 // Define initial state
 const initialState = {
@@ -119,15 +118,28 @@ function cartReducer(state, action) {
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
   const [isLoading, setIsLoading] = useState(true);
-  const { isSignedIn, userId } = useAuth();
+  const [userId, setUserId] = useState(null);
   
-  // Load cart data on initial render and auth state changes
+  // Generate or retrieve anonymous user ID on component mount
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('anonymousUserId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    } else {
+      // Generate a simple UUID for anonymous users
+      const newUserId = 'anon_' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('anonymousUserId', newUserId);
+      setUserId(newUserId);
+    }
+  }, []);
+
+  // Load cart data on initial render and userId changes
   useEffect(() => {
     const loadCart = async () => {
       setIsLoading(true);
       
-      if (isSignedIn && userId) {
-        // User is logged in, try to load cart from database first
+      if (userId) {
+        // Try to load cart from database first
         try {
           const response = await fetch(`/api/cart?userId=${userId}`);
           if (response.ok) {
@@ -142,7 +154,7 @@ export const CartProvider = ({ children }) => {
         }
       }
       
-      // If not logged in or server fetch failed, try local storage
+      // If server fetch failed, try local storage
       const storedCart = localStorage.getItem('cart');
       if (storedCart) {
         try {
@@ -157,8 +169,10 @@ export const CartProvider = ({ children }) => {
       setIsLoading(false);
     };
     
-    loadCart();
-  }, [isSignedIn, userId]);
+    if (userId) {
+      loadCart();
+    }
+  }, [userId]);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
@@ -167,10 +181,10 @@ export const CartProvider = ({ children }) => {
     }
   }, [state, isLoading]);
 
-  // Sync cart to database when it changes and user is logged in
+  // Sync cart to database when it changes and user id is available
   useEffect(() => {
     const syncCartToDatabase = async () => {
-      if (isSignedIn && userId && !isLoading) {
+      if (userId && !isLoading) {
         try {
           await fetch('/api/cart', {
             method: 'POST',
@@ -189,11 +203,12 @@ export const CartProvider = ({ children }) => {
     };
     
     syncCartToDatabase();
-  }, [state, isSignedIn, userId, isLoading]);
+  }, [state, userId, isLoading]);
 
   // Create value object
   const value = {
     cart: state,
+    userId,
     isLoading,
     addToCart: (product) => dispatch({ type: 'ADD_TO_CART', payload: product }),
     removeFromCart: (productId) => dispatch({ type: 'REMOVE_FROM_CART', payload: productId }),

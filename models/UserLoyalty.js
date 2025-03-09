@@ -12,29 +12,11 @@ const userLoyalty = new mongoose.Schema(
       enum: ["Standard", "Silver", "Gold", "Platinum"],
       default: "Standard",
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   { timestamps: true }
 );
 
-loyaltyProfileSchema.methods.updateTier = function () {
-  if (this.totalPoints >= 5000) {
-    this.tier = "Platinum";
-  } else if (this.totalPoints >= 3000) {
-    this.tier = "Gold";
-  } else if (this.totalPoints >= 1000) {
-    this.tier = "Silver";
-  } else {
-    this.tier = "Standard";
-  }
-};
-
-const LoyaltyProfile = mongoose.model("LoyaltyProfile", loyaltyProfileSchema);
-module.exports = LoyaltyProfile;
+const LoyaltyProfile =
+  mongoose.models.LoyaltyProfile ||
+  mongoose.model("LoyaltyProfile", userLoyalty);
+export default LoyaltyProfile;
