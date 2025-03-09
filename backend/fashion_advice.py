@@ -1,5 +1,3 @@
-# fashion_advice.py
-
 # Dictionary of pre-defined fashion advice responses
 fashion_advice_responses = {
     'wedding': """For a wedding, consider these options:
